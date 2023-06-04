@@ -509,6 +509,7 @@ class DonutModel(PreTrainedModel):
                 else:
                     keys = obj.keys()
                 for k in keys:
+                    # 完成生成新标注的token,类可以新增加一个变量检查是否已经添加了这些特殊的key。
                     if update_special_tokens_for_json_key:
                         self.decoder.add_special_tokens([fr"<s_{k}>", fr"</s_{k}>"])
                     output += (
@@ -517,7 +518,7 @@ class DonutModel(PreTrainedModel):
                         + fr"</s_{k}>"
                     )
                 return output
-        elif type(obj) == list:
+        elif type(obj) == list:# 对于list使用<sep/>进行区分。
             return r"<sep/>".join(
                 [self.json2token(item, update_special_tokens_for_json_key, sort_json_key) for item in obj]
             )

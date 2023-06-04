@@ -69,7 +69,7 @@ class DonutDataset(Dataset):
             ground_truth = json.loads(sample["ground_truth"])
             if "gt_parses" in ground_truth:  # when multiple ground truths are available, e.g., docvqa
                 assert isinstance(ground_truth["gt_parses"], list)
-                gt_jsons = ground_truth["gt_parses"]
+                gt_jsons = ground_truth["gt_parses"]# 只需要填充gt_parses，支持嵌套
             else:
                 assert "gt_parse" in ground_truth and isinstance(ground_truth["gt_parse"], dict)
                 gt_jsons = [ground_truth["gt_parse"]]
@@ -84,7 +84,7 @@ class DonutDataset(Dataset):
                     )
                     + self.donut_model.decoder.tokenizer.eos_token
                     for gt_json in gt_jsons  # load json from list of json
-                ]
+                ]# 特定的token。
             )
 
         self.donut_model.decoder.add_special_tokens([self.task_start_token, self.prompt_end_token])
@@ -106,7 +106,7 @@ class DonutDataset(Dataset):
         sample = self.dataset[idx]
 
         # input_tensor
-        input_tensor = self.donut_model.encoder.prepare_input(sample["image"], random_padding=self.split == "train")
+        input_tensor = self.donut_model.encoder.prepare_input(sample["image"], random_padding=self.split == "train")# 把图片变成tensor，根据设定的分辨率调整大小。如果是训练数据的padding总宽度高度不变，左右上下可能随机填充，例如8，3，5的填充，5，3的填充
 
         # input_ids
         processed_parse = random.choice(self.gt_token_sequences[idx])  # can be more than one, e.g., DocVQA Task 1
@@ -126,8 +126,8 @@ class DonutDataset(Dataset):
             ] = self.ignore_id  # model doesn't need to predict pad token
             labels[
                 : torch.nonzero(labels == self.prompt_end_token_id).sum() + 1
-            ] = self.ignore_id  # model doesn't need to predict prompt (for VQA)
-            return input_tensor, input_ids, labels
+            ] = self.ignore_id  # model doesn't need to predict prompt (for VQA) 需要看一下VQA的数据结构。 这块非常奇怪，processed_parse 中的end</s> 而self.prompt_end_token_id 的是'<s_cord-v2>' 所以只有第一位被填充为-100
+            return input_tensor, input_ids, labels # input_ids 本身就是做了数据填充的inputis，input_ids类似于标记哪些是特殊的结束符字符。 可以看代码85行，的确增加的是eos_token,一个feature还是一个bug？
         else:
             prompt_end_index = torch.nonzero(
                 input_ids == self.prompt_end_token_id

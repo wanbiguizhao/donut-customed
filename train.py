@@ -134,6 +134,11 @@ def train(config):
 
 
 if __name__ == "__main__":
+    import debugpy
+    print("Enabling attach starts.")
+    debugpy.listen(address=('0.0.0.0', 9310))
+    debugpy.wait_for_client()
+    print("Enabling attach ends.")
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--exp_version", type=str, required=False)

@@ -49,11 +49,11 @@ class DonutModelPLModule(pl.LightningModule):
         image_tensors, decoder_input_ids, decoder_labels = list(), list(), list()
         for batch_data in batch:
             image_tensors.append(batch_data[0])
-            decoder_input_ids.append(batch_data[1][:, :-1])
-            decoder_labels.append(batch_data[2][:, 1:])
+            decoder_input_ids.append(batch_data[1][:, :-1])# 为啥要不最后一个舍去掉。因为不需要？input的
+            decoder_labels.append(batch_data[2][:, 1:])# 为什么是1？表示prompt的不参加运算？prompt只是给人看的。 
         image_tensors = torch.cat(image_tensors)
         decoder_input_ids = torch.cat(decoder_input_ids)
-        decoder_labels = torch.cat(decoder_labels)
+        decoder_labels = torch.cat(decoder_labels)# 实现的效果是，把list，变成tensor，并不改变shape
         loss = self.model(image_tensors, decoder_input_ids, decoder_labels)[0]
         self.log_dict({"train_loss": loss}, sync_dist=True)
         return loss

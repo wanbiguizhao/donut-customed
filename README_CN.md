@@ -23,3 +23,15 @@ https://github.com/clovaai/donut/issues/190
 2. 使用了cosine 训练策略。
 3. 总共训练了3个epoch，11M的IIT数据和2M合成数据。
 4. 使用了64个 A100 GPU，
+
+## 2023-06-07 05:20:25
+没有白熬夜，模型训练的效果非常好。
+Prediction: <s_full_name><s_fn>北京银信长远科技股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300231</s_cn></s_code_name><s_short_name><s_sn>银信科技</s_sn></s_short_name>                                                                                                                                
+    Answer: <s_full_name><s_fn>北京银信长远科技股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300231</s_cn></s_code_name><s_short_name><s_sn>银信科技</s_sn></s_short_name>                                                                                                                                
+ Normed ED: 0.0                                                                                                                                                                                                                                                                                                 
+Prediction: <s_full_name><s_fn>冠契生物科技股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300238</s_cn></s_code_name><s_short_name><s_sn>冠契生物</s_sn></s_short_name>                                                                                                                                    
+    Answer: <s_full_name><s_fn>冠昊生物科技股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300238</s_cn></s_code_name><s_short_name><s_sn>冠昊生物</s_sn></s_short_name>                                                                                                                                    
+ Normed ED: 0.013888888888888888                                                                                                                                                                                                                                                                                
+Prediction: <s_full_name><s_fn>河北常山生物业股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300255</s_cn></s_code_name><s_short_name><s_sn>常山药业</s_sn></s_short_name>                                                                                                                                  
+    Answer: <s_full_name><s_fn>河北常山生化药业股份有限公司</s_fn></s_full_name><s_code_name><s_cn>300255</s_cn></s_code_name><s_short_name><s_sn>常山药业</s_sn></s_short_name>                                                                                                                                
+ Normed ED: 0.0136986301369863   

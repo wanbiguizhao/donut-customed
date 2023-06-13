@@ -12,7 +12,7 @@ def parser_core_data(ocr_data):
     TEXT_INDEX=0
     company_full_name_pattern=re.compile(r"(?P<full_name>^.*有限公司)",re.DOTALL)
     company_short_name_pattern=re.compile(r"(股票|公司|证券)简称(:|：)(?P<short_name>.*)($|公司|证券)",re.DOTALL)
-    company_code_name_pattern=re.compile(r"(股票|公司|证券)代码(:|：)(?P<code_name>\d+[、]?\d+$)",re.DOTALL)
+    company_code_name_pattern=re.compile(r"(股票|公司|证券)代码(:|：)(?P<code_name>\d+.\d+$)",re.DOTALL)
     info_dict=defaultdict(set)
     for span_data in ocr_data:
         text=span_data[TEXT_SCORE_INDEX][TEXT_INDEX]
@@ -22,12 +22,12 @@ def parser_core_data(ocr_data):
         match=company_short_name_pattern.search(text)
         if match:
             short_name=match.groupdict()["short_name"]
-            for sn in short_name.split("、"):
+            for sn in re.split("、| ",short_name):
                 info_dict["short_name"].add(sn)
         match=company_code_name_pattern.search(text)
         if match:
             code_name=match.groupdict()["code_name"]
-            for cn in code_name.split("、"):
+            for cn in re.split("、| ",code_name):
                 info_dict["code_name"].add(cn)
     return info_dict
     
@@ -52,7 +52,7 @@ basic_image_dir="dataset/images"
 def dump_jsonl(data_list,data_path):
     with open(data_path,"w") as df:
         for  data in data_list:
-            json.dump(data,df)
+            json.dump(data,df,ensure_ascii=False)
             df.write("\n")
 def batch_infer_images():
     """
@@ -66,18 +66,20 @@ def batch_infer_images():
         cls=True,
         use_gpu=True,
         show_log=False,
+        use_space_char=True
+        
     )
     def ocr_infer_image(image_path):
         ret_data=paddleocr.ocr(image_path)
         return ret_data
-    for image_path in tqdm(glob(f"{basic_image_dir}/002548*.png")):
+    for image_path in tqdm(glob(f"{basic_image_dir}/600843*.png")):
         file_name=image_path.split("/")[-1]
         prefix_file_name,ext=os.path.splitext(file_name)
         os.path.split(file_name)
         ocrdata=ocr_infer_image(image_path)
         with open(f"{basic_image_dir}/{prefix_file_name}.json","w") as jsonfile:
             # ocr数据。
-            json.dump(ocrdata,jsonfile)
+            json.dump(ocrdata,jsonfile,ensure_ascii=False)
 def batch_parser_ocr_data():
     #批量解析ocr数据
     c=0
@@ -103,18 +105,25 @@ def batch_parser_ocr_data():
             image_path=f"{prefix_file_name}.png"
         all_gt_docunt_data.append(
             {
-                "ground_truth":json.dumps({"gt_parse":gt_docunt_data}),
+                "ground_truth":json.dumps({"gt_parse":gt_docunt_data},ensure_ascii=False),
                 "file_name":image_path
             }
         )
     train_data,test_data=train_test_split(all_gt_docunt_data,test_size= 0.3,shuffle=True,random_state=22)
+    import shutil
+    for d in train_data:
+        os.makedirs(f"{basic_image_dir}/train",exist_ok=True)
+        shutil.copy2(f"{basic_image_dir}/{d['file_name']}",f"{basic_image_dir}/train")
+    for d in test_data:
+        os.makedirs(f"{basic_image_dir}/val",exist_ok=True)
+        shutil.copy2(f"{basic_image_dir}/{d['file_name']}",f"{basic_image_dir}/val")        
     print(len(train_data),len(test_data))
-    dump_jsonl(train_data,f"{basic_image_dir}/0train.jsonl")
-    dump_jsonl(test_data,f"{basic_image_dir}/0test.jsonl")
+    dump_jsonl(train_data,f"{basic_image_dir}/train/metadata.jsonl")
+    dump_jsonl(test_data,f"{basic_image_dir}/val/metadata.jsonl")
     
 
     print(c,len(glob(f"{basic_image_dir}/*.json")))
     #parser_core_data(ocrdata)
     #print(ocrdata)
-#batch_infer_images()
+batch_infer_images()
 batch_parser_ocr_data()
